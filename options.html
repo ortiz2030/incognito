@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Incognito URL Opener Options</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://www.paypal.com 'wasm-unsafe-eval' 'inline-speculation-rules' http://localhost:* http://127.0.0.1:*">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .url-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .url-item span {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+
+    .url-item button {
+      background-color: #ff4d4d;
+    }
+    
+    #linkCount {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Incognito URL Opener Options</h1>
+  <form id="urlForm">
+    <input type="text" id="urlInput" placeholder="Enter URL">
+    <button type="submit">Add URL</button>
+  </form>
+  
+  <!-- Display the remaining free link slots -->
+  <p id="linkCount">Remaining free link slots: 3</p>
+
+  <h2>Current URLs:</h2>
+  <ul id="urlList"></ul>
+
+  <!-- Container for the PayPal payment button -->
+  <div id="paypal-button-container"></div>
+
+  <script type="module" src="paypal.js"></script>
+
+  <script src="options.js"></script>
+</body>
+</html>
