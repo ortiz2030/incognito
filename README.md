@@ -1,4 +1,4 @@
-# Chrome Extension: URL Redirector
+# Chrome Extension: URL Incognito Redirector
 
 This is a Chrome extension that allows you to redirect specific URLs to an incognito window automatically. If you frequently find yourself on distracting or unwanted websites and want a quick way to redirect them to an incognito window, this extension is for you!
 
