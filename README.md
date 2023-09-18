@@ -30,7 +30,7 @@ Let's say you have added the following URL to your list: `facebook.com`. Now, wh
 
 ## Contributing
 
-Feel free to contribute to this project by opening issues or submitting pull requests on [GitHub](https://github.com/incognito).
+Feel free to contribute to this project by opening issues or submitting pull requests on (https://github.com/ortiz2030/incognito.git).
 
 ## License
 
