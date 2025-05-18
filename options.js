@@ -2,6 +2,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlForm = document.getElementById("urlForm");
   const urlInput = document.getElementById("urlInput");
   const urlList = document.getElementById("urlList");
+  const keepTabOpen = document.getElementById("keepTabOpen");
+
+  // Load saved URLs and preferences
+  loadUrls();
+  loadPreferences();
+
+  // Save the keep tab open preference
+  keepTabOpen.addEventListener("change", () => {
+    chrome.storage.sync.set({ keepTabOpen: keepTabOpen.checked });
+  });
+
+  // Load saved preferences from storage
+  function loadPreferences() {
+    chrome.storage.sync.get({ keepTabOpen: false }, (result) => {
+      keepTabOpen.checked = result.keepTabOpen;
+    });
+  }
 
   // Load saved URLs from storage and display them in the options page
   function loadUrls() {
@@ -22,6 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const li = document.createElement("li");
     li.className = "url-item";
 
+    const urlContent = document.createElement("div");
+    urlContent.className = "url-content";
+
+    const favicon = document.createElement("img");
+    favicon.className = "favicon";
+    
+    try {
+      // Add protocol if missing to properly parse URL
+      let urlToProcess = url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        urlToProcess = 'https://' + url;
+      }
+      const urlObj = new URL(urlToProcess);
+      // Use only the hostname for favicon lookup
+      favicon.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(urlObj.hostname)}`;
+    } catch (e) {
+      favicon.src = "icons/icon-16.png"; // fallback to extension icon
+    }
+    favicon.onerror = () => {
+      favicon.src = "icons/icon-16.png"; // fallback if favicon fails to load
+    };
+
     const span = document.createElement("span");
     span.textContent = url;
 
@@ -31,7 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
       deleteUrl(url);
     });
 
-    li.appendChild(span);
+    urlContent.appendChild(favicon);
+    urlContent.appendChild(span);
+    li.appendChild(urlContent);
     li.appendChild(deleteButton);
 
     return li;
