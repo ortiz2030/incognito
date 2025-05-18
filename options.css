@@ -104,6 +104,22 @@
     transform: translateX(2px);
   }
 
+  .url-item .favicon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+
+  .url-item .url-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin-right: 1rem;
+    font-size: 0.9rem;
+  }
+
   .url-item span {
     flex-grow: 1;
     margin-right: 1rem;
@@ -147,6 +163,54 @@
     width: 16px;
     height: 16px;
   }
+
+  .settings {
+    margin: 1.5rem 0;
+  }
+
+  .switch-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .switch-container input[type="checkbox"] {
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .switch-container input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+  }
+
+  .switch-container input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    background-color: white;
+    transition: transform 0.3s;
+  }
+
+  .switch-container input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+  }
+
+  .switch-label {
+    font-size: 0.9rem;
+    user-select: none;
+  }
+
   @media (max-width: 600px) {
     body {
       padding: 1rem;
