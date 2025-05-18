@@ -1,6 +1,6 @@
 // Register the onBeforeNavigate event listener
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-  chrome.storage.sync.get(['urls'], (result) => {
+  chrome.storage.sync.get(['urls', 'keepTabOpen'], (result) => {
     if (result.urls) {
       const url = details.url;
       const isSearchEngine = isKnownSearchEngine(url);
@@ -12,10 +12,12 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
       });
 
       if (matchingURL && !isSearchEngine) {
-        // Close the current tab
-        chrome.tabs.remove(details.tabId, () => {
-          // Create a new incognito window with the matching URL
-          chrome.windows.create({ url: url, incognito: true });
+        // Create a new incognito window with the matching URL
+        chrome.windows.create({ url: url, incognito: true }, () => {
+          // Only close the original tab if the user hasn't chosen to keep it open
+          if (!result.keepTabOpen) {
+            chrome.tabs.remove(details.tabId);
+          }
         });
       }
     }
