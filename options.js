@@ -2,31 +2,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlForm = document.getElementById("urlForm");
   const urlInput = document.getElementById("urlInput");
   const urlList = document.getElementById("urlList");
-  const keepTabOpen = document.getElementById("keepTabOpen");
+  const keepTabOpenSwitch = document.getElementById("keepTabOpen");
 
-  // Load saved URLs and preferences
-  loadUrls();
-  loadPreferences();
-
-  // Save the keep tab open preference
-  keepTabOpen.addEventListener("change", () => {
-    chrome.storage.sync.set({ keepTabOpen: keepTabOpen.checked });
-  });
-
-  // Load saved preferences from storage
-  function loadPreferences() {
-    chrome.storage.sync.get({ keepTabOpen: false }, (result) => {
-      keepTabOpen.checked = result.keepTabOpen;
-    });
+  // Function to normalize URLs for comparison  // Helper functions
+  function normalizeUrl(url) {
+    try {
+      // Add protocol if missing
+      let urlToProcess = url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        urlToProcess = 'https://' + url;
+      }
+      const urlObj = new URL(urlToProcess);
+      return urlObj.hostname + urlObj.pathname.replace(/\/$/, '');
+    } catch {
+      return url.toLowerCase().trim();
+    }
   }
 
-  // Load saved URLs from storage and display them in the options page
-  function loadUrls() {
-    chrome.storage.sync.get("urls", (result) => {
+  // Load saved URLs and settings from storage
+  function loadSettings() {
+    chrome.storage.sync.get(["urls", "keepTabOpen"], (result) => {
       const urls = result.urls || [];
+      const keepTabOpen = result.keepTabOpen || false;
 
+      // Update switch state
+      keepTabOpenSwitch.checked = keepTabOpen;
+
+      // Update URL list
       urlList.innerHTML = "";
-
       urls.forEach((url) => {
         const li = createUrlListItem(url);
         urlList.appendChild(li);
@@ -46,13 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
     favicon.className = "favicon";
     
     try {
-      // Add protocol if missing to properly parse URL
       let urlToProcess = url;
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         urlToProcess = 'https://' + url;
       }
       const urlObj = new URL(urlToProcess);
-      // Use only the hostname for favicon lookup
       favicon.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(urlObj.hostname)}`;
     } catch (e) {
       favicon.src = "icons/icon-16.png"; // fallback to extension icon
@@ -65,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     span.textContent = url;
 
     const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
+    deleteButton.textContent = "Remove";
     deleteButton.addEventListener("click", () => {
       deleteUrl(url);
     });
@@ -78,13 +79,31 @@ document.addEventListener("DOMContentLoaded", () => {
     return li;
   }
 
+  // Delete a URL from storage
+  function deleteUrl(url) {
+    chrome.storage.sync.get("urls", (result) => {
+      const urls = result.urls || [];
+      const index = urls.indexOf(url);
+      if (index > -1) {
+        urls.splice(index, 1);
+        chrome.storage.sync.set({ urls }, () => {
+          loadSettings();
+        });
+      }
+    });
+  }
+
+  // Save the keep tab open setting
+  keepTabOpenSwitch.addEventListener("change", () => {
+    chrome.storage.sync.set({ keepTabOpen: keepTabOpenSwitch.checked });
+  });
+
   // Handle form submission to add a new URL
   urlForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const newUrl = urlInput.value.trim();
 
     if (newUrl) {
-      // Save the new URL to storage
       chrome.storage.sync.get("urls", (result) => {
         const urls = result.urls || [];
         const normalizedNew = normalizeUrl(newUrl);
@@ -104,24 +123,11 @@ document.addEventListener("DOMContentLoaded", () => {
         urls.push(newUrl);
         chrome.storage.sync.set({ urls }, () => {
           urlInput.value = '';
-          loadUrls();
+          loadSettings();
         });
       });
     }
   });
-
-  // Delete a URL from storage and update the options page
-  function deleteUrl(url) {
-    chrome.storage.sync.get("urls", (result) => {
-      const urls = result.urls || [];
-      const index = urls.indexOf(url);
-
-      if (index > -1) {
-        urls.splice(index, 1);
-        chrome.storage.sync.set({ urls }, loadUrls);
-      }
-    });
-  }
 
   // Add PayPal donate button
   const footer = document.createElement("div");
@@ -141,46 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
   footer.appendChild(donateButton);
   document.querySelector('.card').appendChild(footer);
 
-  // Initial loading of URLs
-  loadUrls();
-
-  function normalizeUrl(url) {
-    try {
-      const urlObj = new URL(url.toLowerCase().trim());
-      return urlObj.hostname + urlObj.pathname.replace(/\/$/, '');
-    } catch {
-      return url.toLowerCase().trim();
-    }
-  }
-
-  function isDuplicateUrl(newUrl, existingUrls) {
-    const normalizedNew = normalizeUrl(newUrl);
-    return existingUrls.some(url => normalizeUrl(url) === normalizedNew);
-  }
-
-  urlForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const url = urlInput.value.trim();
-
-    chrome.storage.sync.get("urls", (result) => {
-      const urls = result.urls || [];
-      
-      if (isDuplicateUrl(url, urls)) {
-        urlInput.classList.add('error');
-        urlInput.value = '';
-        urlInput.placeholder = 'URL already exists!';
-        setTimeout(() => {
-          urlInput.classList.remove('error');
-          urlInput.placeholder = 'Enter website URL to open in incognito mode';
-        }, 2000);
-        return;
-      }
-
-      urls.push(url);
-      chrome.storage.sync.set({ urls }, () => {
-        urlInput.value = '';
-        loadUrls();
-      });
-    });
-  });
+  // Initial loading of settings and URLs
+  loadSettings();
 });
